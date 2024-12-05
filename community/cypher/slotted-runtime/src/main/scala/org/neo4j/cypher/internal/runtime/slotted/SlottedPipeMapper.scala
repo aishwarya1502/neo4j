@@ -277,6 +277,7 @@ import org.neo4j.cypher.internal.runtime.slotted.pipes.NodeIndexContainsScanSlot
 import org.neo4j.cypher.internal.runtime.slotted.pipes.NodeIndexEndsWithScanSlottedPipe
 import org.neo4j.cypher.internal.runtime.slotted.pipes.NodeIndexScanSlottedPipe
 import org.neo4j.cypher.internal.runtime.slotted.pipes.NodeIndexSeekSlottedPipe
+import org.neo4j.cypher.internal.runtime.slotted.pipes.NodeSortMergeJoinSlottedPipe
 import org.neo4j.cypher.internal.runtime.slotted.pipes.NodesByLabelScanSlottedPipe
 import org.neo4j.cypher.internal.runtime.slotted.pipes.OptionalExpandAllSlottedPipe
 import org.neo4j.cypher.internal.runtime.slotted.pipes.OptionalExpandIntoSlottedPipe
@@ -313,6 +314,7 @@ import org.neo4j.cypher.internal.runtime.slotted.pipes.UnionNodesByLabelsScanSlo
 import org.neo4j.cypher.internal.runtime.slotted.pipes.UnionSlottedPipe
 import org.neo4j.cypher.internal.runtime.slotted.pipes.UnwindSlottedPipe
 import org.neo4j.cypher.internal.runtime.slotted.pipes.ValueHashJoinSlottedPipe
+import org.neo4j.cypher.internal.runtime.slotted.pipes.ValueSortMergeJoinSlottedPipe
 import org.neo4j.cypher.internal.runtime.slotted.pipes.VarLengthExpandSlottedPipe
 import org.neo4j.cypher.internal.runtime.slotted.pipes.VarLengthExpandSlottedPipe.SlottedVariablePredicate
 import org.neo4j.cypher.internal.util.attribution.Id
@@ -1787,7 +1789,9 @@ class SlottedPipeMapper(
             id
           )
         } else {
-          NodeHashJoinSlottedPipe(leftNodes, rightNodes, lhs, rhs, slots, rhsSlotMappings)(id)
+          // NodeHashJoinSlottedPipe(leftNodes, rightNodes, lhs, rhs, slots, rhsSlotMappings)(id)
+          NodeSortMergeJoinSlottedPipe(leftNodes, rightNodes, lhs, rhs, slots, rhsSlotMappings)(id)
+
         }
 
       case ValueHashJoin(lhsPlan, rhsPlan, Equals(lhsAstExp, rhsAstExp)) =>
@@ -1800,7 +1804,8 @@ class SlottedPipeMapper(
         checkOnlyWhenAssertionsAreEnabled(verifyArgumentsAreTheSameOnBothSides(plan, physicalPlan))
         val rhsSlotMappings = computeSlotMappings(rhsSlots, argumentSize, slots)
 
-        ValueHashJoinSlottedPipe(lhsCmdExp, rhsCmdExp, lhs, rhs, slots, rhsSlotMappings)(id)
+        // ValueHashJoinSlottedPipe(lhsCmdExp, rhsCmdExp, lhs, rhs, slots, rhsSlotMappings)(id)
+        ValueSortMergeJoinSlottedPipe(lhsCmdExp, rhsCmdExp, lhs, rhs, slots, rhsSlotMappings)(id)
 
       case ConditionalApply(left, right, items) =>
         val (longIds, refIds) = items.partition(idName =>

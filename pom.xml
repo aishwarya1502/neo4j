@@ -500,6 +500,7 @@
               <artifactId>resources</artifactId>
               <version>${build-resources.version}</version>
             </dependency>
+            
           </dependencies>
         </plugin>
         <plugin>
@@ -1218,6 +1219,11 @@
         <groupId>org.neo4j.driver</groupId>
         <artifactId>neo4j-java-driver</artifactId>
         <version>${neo4j-java-driver.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.neo4j</groupId>
+        <artifactId>neo4j-collections</artifactId>
+        <version>${project.version}</version>
       </dependency>
 
 

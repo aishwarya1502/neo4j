@@ -280,6 +280,7 @@ import org.neo4j.cypher.internal.runtime.interpreted.pipes.NodeIndexScanPipe
 import org.neo4j.cypher.internal.runtime.interpreted.pipes.NodeIndexSeekPipe
 import org.neo4j.cypher.internal.runtime.interpreted.pipes.NodeLeftOuterHashJoinPipe
 import org.neo4j.cypher.internal.runtime.interpreted.pipes.NodeRightOuterHashJoinPipe
+import org.neo4j.cypher.internal.runtime.interpreted.pipes.NodeSortMergeJoinPipe
 import org.neo4j.cypher.internal.runtime.interpreted.pipes.NonPipelinedStreamingTestPipe
 import org.neo4j.cypher.internal.runtime.interpreted.pipes.NonPipelinedTestPipe
 import org.neo4j.cypher.internal.runtime.interpreted.pipes.OptionalExpandAllPipe
@@ -345,6 +346,7 @@ import org.neo4j.cypher.internal.runtime.interpreted.pipes.UnionNodeByLabelsScan
 import org.neo4j.cypher.internal.runtime.interpreted.pipes.UnionPipe
 import org.neo4j.cypher.internal.runtime.interpreted.pipes.UnwindPipe
 import org.neo4j.cypher.internal.runtime.interpreted.pipes.ValueHashJoinPipe
+import org.neo4j.cypher.internal.runtime.interpreted.pipes.ValueSortMergeJoinPipe
 import org.neo4j.cypher.internal.runtime.interpreted.pipes.VarLengthExpandPipe
 import org.neo4j.cypher.internal.runtime.interpreted.pipes.VarLengthPredicate
 import org.neo4j.cypher.internal.runtime.interpreted.pipes.aggregation.GroupingAggTable
@@ -1830,8 +1832,8 @@ case class InterpretedPipeMapper(
         CartesianProductPipe(lhs, rhs)(id = id)
 
       case NodeHashJoin(nodes, _, _) =>
-        NodeHashJoinPipe(nodes.map(_.name), lhs, rhs)(id = id)
-
+        // NodeHashJoinPipe(nodes.map(_.name), lhs, rhs)(id = id)
+        NodeSortMergeJoinPipe(nodes.map(_.name).toSet, lhs, rhs)(id = id)
       case LeftOuterHashJoin(nodes, l, r) =>
         val nullableVariables = r.availableSymbols.map(_.name) -- l.availableSymbols.map(_.name)
         NodeLeftOuterHashJoinPipe(nodes.map(_.name), lhs, rhs, nullableVariables)(id = id)
@@ -1908,8 +1910,8 @@ case class InterpretedPipeMapper(
         TriadicSelectionPipe(positivePredicate, lhs, sourceId.name, seenId.name, targetId.name, rhs)(id = id)
 
       case ValueHashJoin(_, _, internal.expressions.Equals(lhsExpression, rhsExpression)) =>
-        ValueHashJoinPipe(buildExpression(lhsExpression), buildExpression(rhsExpression), lhs, rhs)(id = id)
-
+        // ValueHashJoinPipe(buildExpression(lhsExpression), buildExpression(rhsExpression), lhs, rhs)(id = id)
+        ValueSortMergeJoinPipe(buildExpression(lhsExpression), buildExpression(rhsExpression), lhs, rhs)(id = id)
       case ForeachApply(_, _, variable, expression) =>
         ForeachApplyPipe(lhs, rhs, variable.name, buildExpression(expression))(id = id)
 
